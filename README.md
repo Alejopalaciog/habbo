@@ -18,6 +18,18 @@ npm run dev
 Abre <http://localhost:5173> y elige un nombre. Para probar el multijugador,
 abre una segunda pestaña (o una ventana de incógnito) con otro nombre.
 
+### Probarlo sin montar nada
+
+```bash
+npm run build:demo     # genera dist-single/hotel.html
+```
+
+Ese archivo se abre con doble clic en cualquier navegador, sin servidor ni
+instalación. Dentro corre el mismo hotel del servidor, pero en la propia
+pestaña, acompañado de tres vecinos controlados por el ordenador que caminan y
+charlan. Es la manera rápida de enseñar el juego o de trastear con el
+renderizador.
+
 ## Controles
 
 | Acción | Cómo |
@@ -43,6 +55,7 @@ Comandos de chat: `/ayuda`, `/saludo`, `/baile`, `/sala <id>`, `/salas`,
 | `npm run typecheck` | Comprobación de tipos |
 | `npm test` | Prueba de humo de extremo a extremo contra el servidor |
 | `npm run build` | Compila el cliente a `dist/` |
+| `npm run build:demo` | Empaqueta la demo en un único `dist-single/hotel.html` |
 | `npm start` | Arranca solo el servidor (producción) |
 
 ## Cómo está organizado
@@ -58,17 +71,27 @@ src/
 │   └── protocol.ts     Todos los mensajes de red, tipados
 ├── server/
 │   ├── index.ts        Arranque
-│   ├── GameServer.ts   Conexiones, validación de entrada, lista de salas
+│   ├── Hotel.ts        Las reglas del juego, sin saber nada de red
+│   ├── GameServer.ts   Adaptador de WebSockets sobre el Hotel
 │   └── Room.ts         Simulación autoritativa de una sala
-└── client/
-    ├── main.ts         Entrada, interacción y bucle de dibujado
-    ├── net.ts          WebSocket, reconexión y sincronía de relojes
-    ├── state.ts        Estado local e interpolación del movimiento
-    ├── ui.ts           Login, HUD, listas y chat
-    └── render/         Renderizador isométrico y arte procedural
+├── client/
+│   ├── main.ts         Entrada del cliente normal
+│   ├── game.ts         Interacción y bucle de dibujado
+│   ├── transport.ts    El canal con el servidor, como interfaz
+│   ├── net.ts          WebSocket, reconexión y sincronía de relojes
+│   ├── state.ts        Estado local e interpolación del movimiento
+│   ├── markup.ts       La interfaz en HTML, compartida por las dos entradas
+│   ├── ui.ts           Login, HUD, listas y chat
+│   └── render/         Renderizador isométrico y arte procedural
+└── demo/               La versión sin servidor: hotel en la pestaña + bots
 ```
 
 ## Cómo funciona por dentro
+
+**Las reglas no saben de red.** `Hotel` contiene el juego entero —salas,
+jugadores, validación— y solo habla mediante mensajes. `GameServer` le enchufa
+WebSockets y la demo le enchufa llamadas directas dentro del navegador. Por eso
+la demo no es una maqueta: es el mismo servidor, sin cable de por medio.
 
 **El servidor manda.** El cliente nunca decide dónde está su avatar: pide
 «quiero ir a la baldosa (x, y)» y el servidor calcula el camino, comprueba que

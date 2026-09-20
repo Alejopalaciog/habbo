@@ -2,7 +2,7 @@ import { FURNI, type AvatarLook, type FurniKind, type RoomSummary } from '../sha
 import { drawAvatar } from './render/avatar';
 import { colorFromString } from './render/colors';
 import type { ClientAvatar } from './state';
-import type { ConnectionStatus } from './net';
+import type { ConnectionStatus } from './transport';
 
 export function el<T extends HTMLElement>(id: string): T {
   const node = document.getElementById(id);

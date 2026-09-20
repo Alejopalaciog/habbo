@@ -16,5 +16,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     target: 'es2022',
+    rollupOptions: {
+      input: {
+        // El cliente normal, que habla con el servidor de juego.
+        index: 'index.html',
+        // La demo autónoma: el hotel corre dentro de la propia página.
+        demo: 'demo.html',
+      },
+    },
   },
 });

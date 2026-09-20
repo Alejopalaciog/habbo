@@ -1,8 +1,7 @@
 import { decode, encode, type ClientMessage, type ServerMessage } from '../shared/protocol';
+import type { ConnectionStatus, Transport } from './transport';
 
 type Handler = (message: ServerMessage) => void;
-
-export type ConnectionStatus = 'conectando' | 'conectado' | 'reconectando' | 'cerrado';
 
 /**
  * Conexión con el servidor de juego.
@@ -12,7 +11,7 @@ export type ConnectionStatus = 'conectando' | 'conectado' | 'reconectando' | 'ce
  * tiempo del servidor) y encolar los mensajes que se envían antes de estar
  * conectado.
  */
-export class Net {
+export class Net implements Transport {
   private socket: WebSocket | null = null;
   private readonly queue: ClientMessage[] = [];
   private handler: Handler = () => {};

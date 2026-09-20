@@ -194,9 +194,10 @@ button {
 }
 
 .hud-top {
-  top: 14px;
-  left: 14px;
-  right: 14px;
+  /* En móviles con muesca, el HUD baja por debajo de la barra del sistema. */
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: calc(14px + env(safe-area-inset-left, 0px));
+  right: calc(14px + env(safe-area-inset-right, 0px));
   display: flex;
   gap: 12px;
   align-items: flex-start;
@@ -246,8 +247,8 @@ button {
 }
 
 .side-panel {
-  top: 68px;
-  right: 14px;
+  top: calc(68px + env(safe-area-inset-top, 0px));
+  right: calc(14px + env(safe-area-inset-right, 0px));
   width: 232px;
   max-height: calc(100% - 230px);
   overflow-y: auto;
@@ -324,8 +325,8 @@ button {
 }
 
 .hud-bottom {
-  bottom: 14px;
-  left: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  left: calc(14px + env(safe-area-inset-left, 0px));
   width: min(430px, calc(100% - 28px));
   display: grid;
   gap: 8px;
