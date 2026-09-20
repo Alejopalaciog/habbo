@@ -1,0 +1,28 @@
+{
+  "name": "habbo-clone",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Juego social isométrico multijugador al estilo Habbo Hotel",
+  "scripts": {
+    "dev": "concurrently -n servidor,cliente -c magenta,cyan \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "tsx watch src/server/index.ts",
+    "dev:client": "vite",
+    "build": "tsc --noEmit && vite build",
+    "start": "tsx src/server/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx scripts/smoke-test.ts",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/ws": "^8.5.13",
+    "concurrently": "^9.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}
