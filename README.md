@@ -140,6 +140,52 @@ UPDATE users SET credits = 999999, pixels = 999999 WHERE username = 'Alejo';
 
 Reinicia el emulador después (`./hotel.sh reiniciar`) o vuelve a entrar.
 
+## Salas listas para jugar
+
+En [`salas/`](salas/) hay salas generadas que se cargan de una orden:
+
+```
+hotel.cmd sala guerra-vip TuNombre
+```
+
+Crea el mapa, la sala y los muebles, y reinicia el emulador para que la vea.
+Se puede repetir: borra su versión anterior antes de crearla.
+
+### Guerra VIP
+
+El clásico de empujar y tirar. Dos arenas elevadas —una de 1vs1 y otra de
+todos contra todos arriba— rodeadas por una banda de baldosas que
+teletransportan al punto de partida a quien las pise. Quien cae, vuelve a
+empezar.
+
+**Después de cargarla quedan dos cosas por hacer**, porque no se pueden dejar
+resueltas desde la base de datos:
+
+1. **Activa los comandos para todos los rangos.** De fábrica solo el rango 7
+   puede empujar, así que tu rival no podría jugar:
+
+   ```sql
+   UPDATE permissions SET cmd_push = '1', cmd_pull = '1', cmd_moonwalk = '1';
+   ```
+
+   Con `hotel.cmd sql`, y luego `hotel.cmd reiniciar`.
+
+2. **Configura los dos muebles wired**, que están puestos en la zona segura,
+   apilados en la misma casilla:
+   - En **al pisar un mueble**: selecciona las 23 baldosas grandes de las
+     bandas. Son piezas de 4x4, así que son 23 clics, no 368.
+   - En **teletransportar al usuario**: apunta a la baldosa pequeña del
+     centro de la zona segura.
+
+El motivo de que ese paso sea manual: Arcturus guarda la configuración del
+wired en `items.wired_data`, con un formato que cambia entre versiones y que
+no se puede deducir de una instalación limpia. Configurarlo una vez en el
+cliente lo escribe correctamente para tu versión.
+
+Para cambiar el tamaño de las arenas, edita `salas/generar.py` y ejecuta
+`python3 salas/generar.py`: comprueba que el mapa sea coherente y reescribe el
+SQL.
+
 ## Puertos
 
 | Puerto | Qué es |

@@ -295,6 +295,57 @@ orden_reparar() {
   verde "Hecho. Sigue el progreso con:  $YO logs arcturus"
 }
 
+orden_sala() {
+  # Los argumentos se validan antes de tocar Docker: un nombre mal escrito
+  # debe decirlo, no soltar un error de conexión que despista.
+  local nombre="${1:-}" usuario="${2:-}"
+
+  if [ -z "$nombre" ]; then
+    rojo "Dime qué sala cargar."
+    gris "Disponibles:"
+    for archivo in "$AQUI"/salas/*.sql; do
+      [ -e "$archivo" ] || continue
+      case "$archivo" in *.plantilla.sql) continue ;; esac
+      gris "    $(basename "$archivo" .sql)"
+    done
+    exit 1
+  fi
+
+  local archivo="$AQUI/salas/$nombre.sql"
+  [ -f "$archivo" ] || { rojo "No existe salas/$nombre.sql"; exit 1; }
+
+  if [ -n "$usuario" ]; then
+    # Nombre acotado a caracteres inofensivos: esto acaba dentro de una
+    # consulta, y no queremos sorpresas ni en tu propia base de datos.
+    case "$usuario" in
+      *[!A-Za-z0-9._-]*) rojo "Nombre de usuario no válido: '$usuario'"; exit 1 ;;
+    esac
+  fi
+
+  comprobar_requisitos
+  if ! docker ps --format '{{.Names}}' | grep -qx mysql; then
+    rojo "La base de datos no está en marcha."
+    gris "Arranca primero con: $YO arrancar"
+    exit 1
+  fi
+
+  info "Cargando salas/$nombre.sql..."
+  if [ -n "$usuario" ]; then
+    sed "s/SET @usuario := '[^']*'/SET @usuario := '$usuario'/" "$archivo" \
+      | docker exec -i mysql mysql -u arcturus_user -parcturus_pw arcturus
+  else
+    docker exec -i mysql mysql -u arcturus_user -parcturus_pw arcturus < "$archivo"
+  fi
+
+  info "Reiniciando el emulador para que cargue la sala nueva..."
+  if supervisor_listo arcturus; then
+    docker exec arcturus supervisorctl restart arcturus-emulator >/dev/null
+  else
+    compose restart arcturus >/dev/null
+  fi
+  verde "Listo. Entra al hotel y búscala en el navegador de salas."
+}
+
 orden_diagnostico() {
   echo "Carpeta del stack: $STACK"
   if [ ! -d "$STACK" ]; then
@@ -331,6 +382,8 @@ Hotel local — emulador Arcturus + cliente Nitro
   ./hotel.sh estado      Qué contenedores hay en marcha
   ./hotel.sh diagnostico Qué submódulos faltan y cuánto ocupan
   ./hotel.sh reparar     Arregla finales de línea y recrea los contenedores
+  ./hotel.sh sala <n> [usuario]
+                         Carga una sala de salas/ (p. ej. guerra-vip)
   ./hotel.sh sql         Abre la consola de MariaDB
   ./hotel.sh reiniciar   Reinicia solo el emulador
   ./hotel.sh parar       Para todo, conservando los datos
@@ -351,6 +404,7 @@ case "${1:-ayuda}" in
   estado)     orden_estado ;;
   diagnostico|diagnóstico) orden_diagnostico ;;
   reparar)    orden_reparar ;;
+  sala)       shift; orden_sala "${1:-}" "${2:-}" ;;
   sql)        orden_sql ;;
   reiniciar)  orden_reiniciar ;;
   parar)      orden_parar ;;
