@@ -153,10 +153,22 @@ Se puede repetir: borra su versión anterior antes de crearla.
 
 ### Guerra VIP
 
-El clásico de empujar y tirar. Dos arenas elevadas —una de 1vs1 y otra de
-todos contra todos arriba— rodeadas por una banda de baldosas que
-teletransportan al punto de partida a quien las pise. Quien cae, vuelve a
-empezar.
+El clásico de empujar y tirar. Sala plana de **13x8 = 104 baldosas** con un
+**camino en S**: los carriles seguros alternan con carriles de baldosas que
+teletransportan al inicio a quien las pise. Como cada tramo del camino tiene
+trampa arriba y abajo, **un solo empujón elimina**. Al fondo, la zona de
+combate y unos sofás para quien prefiera mirar.
+
+```
+ .PPPPPPPPPAAAA.     P combate   A sofás
+ .VVVVVVVVVVVVV.     V camino seguro
+ .RRRRRRRRRRRRV.     R baldosa que teletransporta
+ .VVVVVVVVVVVVV.
+ .VRRRRRRRRRRRR.
+ .VVVVVVVVVVVVV.
+ .RRRRRRRRRRRRV.
+ VIVVVVVVVVVVVV.     I punto de reaparición
+```
 
 **Después de cargarla quedan dos cosas por hacer**, porque no se pueden dejar
 resueltas desde la base de datos:
@@ -170,21 +182,20 @@ resueltas desde la base de datos:
 
    Con `hotel.cmd sql`, y luego `hotel.cmd reiniciar`.
 
-2. **Configura los dos muebles wired**, que están puestos en la zona segura,
-   apilados en la misma casilla:
-   - En **al pisar un mueble**: selecciona las 23 baldosas grandes de las
-     bandas. Son piezas de 4x4, así que son 23 clics, no 368.
-   - En **teletransportar al usuario**: apunta a la baldosa pequeña del
-     centro de la zona segura.
+2. **Configura los dos muebles wired**, apilados en la esquina del fondo:
+   - En **al pisar un mueble**: selecciona las 36 baldosas de los carriles.
+   - En **teletransportar al usuario**: apunta a la baldosa suelta de la
+     esquina de entrada. Es igual que las trampas, así que **no la
+     selecciones** en el paso anterior.
 
 El motivo de que ese paso sea manual: Arcturus guarda la configuración del
 wired en `items.wired_data`, con un formato que cambia entre versiones y que
 no se puede deducir de una instalación limpia. Configurarlo una vez en el
 cliente lo escribe correctamente para tu versión.
 
-Para cambiar el tamaño de las arenas, edita `salas/generar.py` y ejecuta
-`python3 salas/generar.py`: comprueba que el mapa sea coherente y reescribe el
-SQL.
+Para cambiar la sala, edita `salas/generar.py` y ejecuta
+`python3 salas/generar.py`: comprueba que el laberinto siga teniendo solución
+antes de reescribir el SQL.
 
 ## Puertos
 

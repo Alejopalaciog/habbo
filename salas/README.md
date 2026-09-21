@@ -11,16 +11,23 @@ hotel.cmd sala <nombre> [usuario]
 | `guerra-vip.sql` | La sala Guerra VIP, lista para cargar |
 | `guerra-vip.plantilla.sql` | Plantilla del SQL, con huecos que rellena el generador |
 | `generar.py` | Genera el SQL: diseña el mapa, lo comprueba y lo escribe |
+| `lib_items.py` | Lectura del catálogo de muebles de Arcturus |
 
 El SQL **no se edita a mano**: se regenera con `python3 salas/generar.py`, que
 lee los identificadores de mueble del volcado de Arcturus en `stack/`, así que
 no hay números inventados.
 
-Antes de escribir nada, el generador comprueba dos cosas:
+Antes de escribir nada, el generador comprueba tres cosas:
 
-- que cada baldosa de 4x4 se apoya en suelo de altura uniforme, porque si no
-  no se puede colocar;
-- que desde la puerta se llega a las dos arenas y al punto de reaparición,
-  recorriendo el mapa y respetando que solo se sube un nivel de golpe.
+- que desde la puerta se llega a la zona de combate **sin pisar una sola
+  trampa**, recorriendo solo las baldosas seguras: si el camino en S se
+  rompe, la sala no tendría solución;
+- que el camino es de verdad peligroso, contando cuántas baldosas seguras
+  tienen una trampa pegada al norte o al sur;
+- que la sala mide exactamente 104 baldosas, como la original.
 
 Si alguna falla, aborta sin tocar el SQL.
+
+`lib_items.py` lee el catálogo de muebles del volcado. Tiene su propio
+analizador porque los nombres traen comillas escapadas que descuadran
+cualquier separación ingenua por comas.

@@ -1,7 +1,8 @@
 -- =====================================================================
 --  Sala "Guerra VIP" para Arcturus Morningstar
 --
---  Crea el mapa, la sala y las {n} piezas de trampa ya colocadas.
+--  Sala plana de 13x8 (104 baldosas) con un camino en S: {n} baldosas
+--  trampa, {nsofas} sofas y los dos muebles wired, ya colocados.
 --  Los dos muebles wired quedan puestos pero SIN configurar: ese paso se
 --  hace desde el cliente, en dos dialogos. Ver el README.
 --
@@ -43,12 +44,19 @@ SET @sala := (SELECT id FROM rooms
               WHERE name = 'Guerra VIP' AND owner_id <=> @propietario
               ORDER BY id DESC LIMIT 1);
 
--- --- Baldosas trampa: {n} piezas de 4x4 que cubren {c} casillas --------
+-- --- Baldosas trampa: los {n} carriles rojos ---------------------------
 INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
 VALUES
 {traps};
 
--- --- Destino del teletransporte, en la zona segura --------------------
+-- --- Sofas de la zona de descanso, al fondo ---------------------------
+INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
+VALUES
+{sofas};
+
+-- --- Destino del teletransporte: la baldosa de entrada -----------------
+--  OJO: es una baldosa magica igual que las trampas, pero esta suelta en
+--  la esquina de entrada. No la selecciones como trampa en el wired.
 INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
 VALUES (@propietario, @sala, {dest}, {rx}, {ry}, 0, 0, '');
 

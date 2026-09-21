@@ -1,7 +1,8 @@
 -- =====================================================================
 --  Sala "Guerra VIP" para Arcturus Morningstar
 --
---  Crea el mapa, la sala y las 23 piezas de trampa ya colocadas.
+--  Sala plana de 13x8 (104 baldosas) con un camino en S: 36 baldosas
+--  trampa, 4 sofas y los dos muebles wired, ya colocados.
 --  Los dos muebles wired quedan puestos pero SIN configurar: ese paso se
 --  hace desde el cliente, en dos dialogos. Ver el README.
 --
@@ -27,7 +28,7 @@ DELETE FROM room_models WHERE name = 'model_guerravip';
 -- --- Mapa de la sala --------------------------------------------------
 --  x = sin suelo    0 = suelo    1 = plataforma o rampa
 INSERT INTO room_models (name, door_x, door_y, door_dir, heightmap, public_items, club_only)
-VALUES ('model_guerravip', 0, 37, 2, 'xxxxxxxxxxxxxxxxxxxxxx\r\nx00000000000000000000x\r\nx00000000000000000000x\r\nx00000000000000000000x\r\nx00000000000000000000x\r\nx00001111111111110000x\r\nx00001111111111110000x\r\nx00001111111111110000x\r\nx00001111111111110000x\r\nx00001111111111110000x\r\nx00001111111111110000x\r\nx00001111111111110000x\r\nx00001111111111110000x\r\nx00000000111100000000x\r\nx00000000111100000000x\r\nx00000000111100000000x\r\nx00000000111100000000x\r\nxxxxxxxxxxx11xxxxxxxxx\r\nxxx0000000011110000xxx\r\nxxx0000000011110000xxx\r\nxxx0000000011110000xxx\r\nxxx0000000011110000xxx\r\nxxx0000111111110000xxx\r\nxxx0000111111110000xxx\r\nxxx0000111111110000xxx\r\nxxx0000111111110000xxx\r\nxxx0000111111110000xxx\r\nxxx0000111111110000xxx\r\nxxx0000111111110000xxx\r\nxxx0000111111110000xxx\r\nxxx0000000011110000xxx\r\nxxx0000000011110000xxx\r\nxxx0000000011110000xxx\r\nxxx0000000011110000xxx\r\nxxxxxxxxxxx11xxxxxxxxx\r\nxxxxxxxxxxx11xxxxxxxxx\r\nxxxxxx0000000000xxxxxx\r\n0000000000000000xxxxxx\r\nxxxxxx0000000000xxxxxx\r\nxxxxxxxxxxxxxxxxxxxxxx', '', '0');
+VALUES ('model_guerravip', 0, 8, 2, 'xxxxxxxxxxxxxxx\r\nx0000000000000x\r\nx0000000000000x\r\nx0000000000000x\r\nx0000000000000x\r\nx0000000000000x\r\nx0000000000000x\r\nx0000000000000x\r\n00000000000000x\r\nxxxxxxxxxxxxxxx', '', '0');
 
 -- --- La sala ----------------------------------------------------------
 --  allow_walkthrough = 0 es imprescindible: si los jugadores se atraviesan,
@@ -43,42 +44,65 @@ SET @sala := (SELECT id FROM rooms
               WHERE name = 'Guerra VIP' AND owner_id <=> @propietario
               ORDER BY id DESC LIMIT 1);
 
--- --- Baldosas trampa: 23 piezas de 4x4 que cubren 368 casillas --------
+-- --- Baldosas trampa: los 36 carriles rojos ---------------------------
 INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
 VALUES
-       (@propietario, @sala, 180, 1, 1, 0, 0, ''),
-       (@propietario, @sala, 180, 5, 1, 0, 0, ''),
-       (@propietario, @sala, 180, 9, 1, 0, 0, ''),
-       (@propietario, @sala, 180, 13, 1, 0, 0, ''),
-       (@propietario, @sala, 180, 17, 1, 0, 0, ''),
-       (@propietario, @sala, 180, 1, 5, 0, 0, ''),
-       (@propietario, @sala, 180, 17, 5, 0, 0, ''),
-       (@propietario, @sala, 180, 1, 9, 0, 0, ''),
-       (@propietario, @sala, 180, 17, 9, 0, 0, ''),
-       (@propietario, @sala, 180, 1, 13, 0, 0, ''),
-       (@propietario, @sala, 180, 5, 13, 0, 0, ''),
-       (@propietario, @sala, 180, 13, 13, 0, 0, ''),
-       (@propietario, @sala, 180, 17, 13, 0, 0, ''),
-       (@propietario, @sala, 180, 3, 18, 0, 0, ''),
-       (@propietario, @sala, 180, 7, 18, 0, 0, ''),
-       (@propietario, @sala, 180, 15, 18, 0, 0, ''),
-       (@propietario, @sala, 180, 3, 22, 0, 0, ''),
-       (@propietario, @sala, 180, 15, 22, 0, 0, ''),
-       (@propietario, @sala, 180, 3, 26, 0, 0, ''),
-       (@propietario, @sala, 180, 15, 26, 0, 0, ''),
-       (@propietario, @sala, 180, 3, 30, 0, 0, ''),
-       (@propietario, @sala, 180, 7, 30, 0, 0, ''),
-       (@propietario, @sala, 180, 15, 30, 0, 0, '');
+       (@propietario, @sala, 5103, 1, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 2, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 3, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 4, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 5, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 6, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 7, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 8, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 9, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 10, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 11, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 12, 7, 0, 0, ''),
+       (@propietario, @sala, 5103, 2, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 3, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 4, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 5, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 6, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 7, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 8, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 9, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 10, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 11, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 12, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 13, 5, 0, 0, ''),
+       (@propietario, @sala, 5103, 1, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 2, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 3, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 4, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 5, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 6, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 7, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 8, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 9, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 10, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 11, 3, 0, 0, ''),
+       (@propietario, @sala, 5103, 12, 3, 0, 0, '');
 
--- --- Destino del teletransporte, en la zona segura --------------------
+-- --- Sofas de la zona de descanso, al fondo ---------------------------
 INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
-VALUES (@propietario, @sala, 5103, 11, 37, 0, 0, '');
+VALUES
+       (@propietario, @sala, 36, 10, 1, 0, 2, ''),
+       (@propietario, @sala, 36, 11, 1, 0, 2, ''),
+       (@propietario, @sala, 36, 12, 1, 0, 2, ''),
+       (@propietario, @sala, 36, 13, 1, 0, 2, '');
+
+-- --- Destino del teletransporte: la baldosa de entrada -----------------
+--  OJO: es una baldosa magica igual que las trampas, pero esta suelta en
+--  la esquina de entrada. No la selecciones como trampa en el wired.
+INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
+VALUES (@propietario, @sala, 5103, 1, 8, 0, 0, '');
 
 -- --- Muebles wired, apilados en la misma casilla ----------------------
 --  Comparten casilla a proposito: es lo que los enlaza como un circuito.
 INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
-VALUES (@propietario, @sala, 3703, 8, 37, 0, 0, ''),
-       (@propietario, @sala, 3674, 8, 37, 0.65, 0, '');
+VALUES (@propietario, @sala, 3703, 1, 1, 0, 0, ''),
+       (@propietario, @sala, 3674, 1, 1, 0.65, 0, '');
 
 SELECT @sala AS sala_creada,
        (SELECT COUNT(*) FROM items WHERE room_id <=> @sala) AS muebles_colocados;
