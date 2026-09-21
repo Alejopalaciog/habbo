@@ -3,7 +3,8 @@
 # Monta y maneja un hotel local completo: emulador Arcturus Morningstar +
 # cliente Nitro (HTML5) + MariaDB, todo en Docker.
 #
-# Uso:  ./hotel.sh <orden>
+# Uso:  ./hotel.sh <orden>          (Linux, macOS, WSL, Git Bash)
+#       hotel.cmd <orden>          (cmd.exe o PowerShell en Windows)
 # Ver:  ./hotel.sh ayuda
 #
 set -euo pipefail
@@ -50,6 +51,16 @@ comprobar_requisitos() {
 
 compose() {
   "${COMPOSE[@]}" -f "$STACK/docker-compose.yaml" --project-directory "$STACK" "$@"
+}
+
+# Git Bash no da una terminal real a los programas de Windows: sin winpty,
+# `docker exec -it` falla con "the input device is not a TTY".
+interactivo() {
+  if command -v winpty >/dev/null 2>&1; then
+    winpty "$@"
+  else
+    "$@"
+  fi
 }
 
 # ------------------------------------------------------------------ #
@@ -125,7 +136,7 @@ orden_logs() {
 
 orden_sql() {
   comprobar_requisitos
-  docker exec -it mysql mysql -u arcturus_user -parcturus_pw arcturus
+  interactivo docker exec -it mysql mysql -u arcturus_user -parcturus_pw arcturus
 }
 
 orden_reiniciar() {
@@ -171,6 +182,8 @@ Hotel local — emulador Arcturus + cliente Nitro
 
 Primera vez:   instalar -> arrancar -> (esperar) -> assets
 Para jugar:    http://127.0.0.1:1080?sso=123
+
+En Windows, desde cmd.exe o PowerShell, usa  hotel.cmd <orden>
 FIN
 }
 

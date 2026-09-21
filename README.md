@@ -30,15 +30,31 @@ Todo corre en Docker, aislado de tu sistema.
 - **Docker Desktop** arrancado (en Windows, con WSL2 activado)
 - **Git**
 - Unos **10 GB** libres y una conexión decente: la primera vez descarga mucho
-- En Windows, ejecuta el script desde **WSL** o **Git Bash**
 
 ## Puesta en marcha
+
+### Windows (cmd.exe o PowerShell)
+
+Usa `hotel.cmd`, que busca Git Bash o WSL por ti:
+
+```bat
+hotel.cmd instalar
+hotel.cmd arrancar
+hotel.cmd logs
+```
+
+Desde **Git Bash** o **WSL** puedes usar directamente `./hotel.sh instalar`.
+
+### Linux y macOS
 
 ```bash
 ./hotel.sh instalar    # clona el stack y baja los submódulos
 ./hotel.sh arrancar    # levanta base de datos, emulador y cliente
 ./hotel.sh logs        # mira cómo va (5-10 min la primera vez)
 ```
+
+En las órdenes que siguen, si estás en cmd.exe cambia `./hotel.sh` por
+`hotel.cmd`; hacen exactamente lo mismo.
 
 Cuando los registros se calmen, abre:
 
@@ -150,6 +166,22 @@ la primera vez. `./hotel.sh reiniciar` suele bastar.
 `yarn install` del cliente. 5-10 minutos es lo esperado; míralo con `logs`.
 
 **Quiero empezar de cero.** `./hotel.sh borrar` y luego `arrancar`.
+
+**En cmd.exe: «'.' no se reconoce como un comando interno o externo».** Estás
+usando sintaxis de bash en la consola de Windows. Usa `hotel.cmd instalar`, o
+abre Git Bash.
+
+**En Git Bash: «$'\r': command not found».** El script se descargó con finales
+de línea de Windows. El `.gitattributes` del repositorio lo evita, pero si
+clonaste antes de que existiera, arréglalo con:
+
+```bash
+git rm --cached -r . && git reset --hard
+```
+
+**En Git Bash: «the input device is not a TTY».** Ya está contemplado: el script
+usa `winpty` cuando está disponible. Si aun así falla, usa esa orden desde
+PowerShell o cmd con `hotel.cmd sql`.
 
 ## Créditos
 
