@@ -1,0 +1,3 @@
+# El stack se clona en tu máquina: son cientos de megas de código y assets,
+# y los assets son propiedad de Sulake. No entran en el control de versiones.
+stack/

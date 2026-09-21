@@ -126,6 +126,17 @@ cada altura, de atrás hacia delante. Pintar los niveles altos al final es lo qu
 hace que el escalón de una plataforma tape correctamente el suelo que tiene
 delante. Los avatares y los muebles se ordenan después por profundidad (`x + y`).
 
+## ¿Y una réplica exacta de Habbo?
+
+Este proyecto es un juego propio con arte original. Si lo que quieres es montar
+en tu PC una réplica idéntica al Habbo original, eso es otro camino: el
+ecosistema open source de la comunidad (emulador Arcturus Morningstar + cliente
+Nitro). Está en [`retro/`](retro/README.md), con un script que lo levanta en
+tres órdenes.
+
+Ojo: el emulador y el cliente son libres, pero los assets son de Sulake, así que
+es para uso local y privado. El directorio los mantiene fuera de Git.
+
 ## Ideas para seguir
 
 - Persistir los muebles y los perfiles (ahora todo vive en memoria).
