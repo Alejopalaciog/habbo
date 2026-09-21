@@ -3,8 +3,8 @@
 # Monta y maneja un hotel local completo: emulador Arcturus Morningstar +
 # cliente Nitro (HTML5) + MariaDB, todo en Docker.
 #
-# Uso:  ./retro/hotel.sh <orden>
-# Ver:  ./retro/hotel.sh ayuda
+# Uso:  ./hotel.sh <orden>
+# Ver:  ./hotel.sh ayuda
 #
 set -euo pipefail
 
@@ -68,12 +68,12 @@ orden_instalar() {
   git -C "$STACK" submodule init
   git -C "$STACK" submodule update --recursive
 
-  verde "Listo. Ahora:  ./retro/hotel.sh arrancar"
+  verde "Listo. Ahora:  ./hotel.sh arrancar"
 }
 
 orden_arrancar() {
   comprobar_requisitos
-  [ -d "$STACK" ] || { rojo "Primero ejecuta: ./retro/hotel.sh instalar"; exit 1; }
+  [ -d "$STACK" ] || { rojo "Primero ejecuta: ./hotel.sh instalar"; exit 1; }
 
   info "Levantando MariaDB, Arcturus y Nitro..."
   compose up -d
@@ -83,13 +83,13 @@ orden_arrancar() {
   El primer arranque compila el emulador con Maven e instala las
   dependencias del cliente. Tarda entre 5 y 10 minutos: es normal.
 
-  Sigue el progreso con:   ./retro/hotel.sh logs
+  Sigue el progreso con:   ./hotel.sh logs
   Cuando termine, abre:    http://127.0.0.1:1080?sso=123
 
   Si el cliente se queda cargando en torno al 20 %, es que faltan los
   assets convertidos. Ejecuta entonces:
 
-      ./retro/hotel.sh assets
+      ./hotel.sh assets
 
 FIN
 }
@@ -98,7 +98,7 @@ orden_assets() {
   comprobar_requisitos
   if ! docker ps --format '{{.Names}}' | grep -qx nitro; then
     rojo "El contenedor 'nitro' no está en marcha."
-    gris "Arranca primero con: ./retro/hotel.sh arrancar"
+    gris "Arranca primero con: ./hotel.sh arrancar"
     exit 1
   fi
 
@@ -159,15 +159,15 @@ orden_ayuda() {
   cat <<'FIN'
 Hotel local — emulador Arcturus + cliente Nitro
 
-  ./retro/hotel.sh instalar    Clona el stack y descarga los submódulos
-  ./retro/hotel.sh arrancar    Levanta base de datos, emulador y cliente
-  ./retro/hotel.sh assets      Convierte los SWF a .nitro (tras el 1.er arranque)
-  ./retro/hotel.sh logs [qué]  Sigue los registros: todo | arcturus | nitro
-  ./retro/hotel.sh estado      Qué contenedores hay en marcha
-  ./retro/hotel.sh sql         Abre la consola de MariaDB
-  ./retro/hotel.sh reiniciar   Reinicia solo el emulador
-  ./retro/hotel.sh parar       Para todo, conservando los datos
-  ./retro/hotel.sh borrar      Borra datos y volúmenes (pide confirmación)
+  ./hotel.sh instalar    Clona el stack y descarga los submódulos
+  ./hotel.sh arrancar    Levanta base de datos, emulador y cliente
+  ./hotel.sh assets      Convierte los SWF a .nitro (tras el 1.er arranque)
+  ./hotel.sh logs [qué]  Sigue los registros: todo | arcturus | nitro
+  ./hotel.sh estado      Qué contenedores hay en marcha
+  ./hotel.sh sql         Abre la consola de MariaDB
+  ./hotel.sh reiniciar   Reinicia solo el emulador
+  ./hotel.sh parar       Para todo, conservando los datos
+  ./hotel.sh borrar      Borra datos y volúmenes (pide confirmación)
 
 Primera vez:   instalar -> arrancar -> (esperar) -> assets
 Para jugar:    http://127.0.0.1:1080?sso=123

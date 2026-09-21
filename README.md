@@ -1,150 +1,160 @@
-# Hotel — juego social isométrico multijugador
+# Hotel — réplica local de Habbo con Arcturus + Nitro
 
-Un juego social al estilo Habbo Hotel: salas isométricas, avatares que caminan
-con búsqueda de caminos, chat con bocadillos y muebles que puedes colocar.
-Servidor autoritativo en Node + WebSockets, cliente en TypeScript sobre Canvas 2D.
+Monta en tu PC un hotel idéntico al original, para uso **privado y local**,
+con el ecosistema open source que la comunidad mantiene desde hace más de una
+década.
 
-Todo el arte es **procedural y original**: los avatares, los muebles y las salas
-se dibujan con geometría en tiempo de ejecución. No se usa ningún recurso de
-Habbo Hotel, que es una marca y un juego propiedad de Sulake.
+> En [`juego-propio/`](juego-propio/README.md) está guardado, como referencia, el
+> juego isométrico con arte original que construimos antes de tomar este camino.
+> Es un proyecto independiente: no interviene en nada de lo que hay aquí.
 
-## Cómo jugarlo
+> **Sobre los assets.** El emulador y el cliente son software libre, pero los
+> sprites, muebles, sonidos y fuentes son propiedad de Sulake. Se descargan en
+> tu máquina al instalar y están excluidos del control de versiones
+> (`.gitignore`). No los subas a ningún sitio ni publiques el servidor.
+
+## Qué se instala
+
+| Pieza | Función |
+| --- | --- |
+| **Arcturus Morningstar** | El emulador del servidor, en Java. Habla el protocolo real |
+| **NitroWebsockets** | Plugin que le añade WebSockets para clientes de navegador |
+| **Nitro (nitro-react)** | El cliente HTML5, reescritura del Flash original |
+| **nitro-converter** | Convierte los SWF a paquetes `.nitro` que el cliente entiende |
+| **MariaDB** | Base de datos: usuarios, salas, muebles, catálogo |
+
+Todo corre en Docker, aislado de tu sistema.
+
+## Requisitos
+
+- **Docker Desktop** arrancado (en Windows, con WSL2 activado)
+- **Git**
+- Unos **10 GB** libres y una conexión decente: la primera vez descarga mucho
+- En Windows, ejecuta el script desde **WSL** o **Git Bash**
+
+## Puesta en marcha
 
 ```bash
-npm install
-npm run dev
+./hotel.sh instalar    # clona el stack y baja los submódulos
+./hotel.sh arrancar    # levanta base de datos, emulador y cliente
+./hotel.sh logs        # mira cómo va (5-10 min la primera vez)
 ```
 
-Abre <http://localhost:5173> y elige un nombre. Para probar el multijugador,
-abre una segunda pestaña (o una ventana de incógnito) con otro nombre.
+Cuando los registros se calmen, abre:
 
-### Probarlo sin montar nada
+**<http://127.0.0.1:1080?sso=123>**
+
+Si el cliente se atasca alrededor del **20 %**, faltan los assets convertidos.
+Es lo normal en el primer arranque:
 
 ```bash
-npm run build:demo     # genera dist-single/hotel.html
+./hotel.sh assets      # convierte los SWF; tarda un buen rato
 ```
 
-Ese archivo se abre con doble clic en cualquier navegador, sin servidor ni
-instalación. Dentro corre el mismo hotel del servidor, pero en la propia
-pestaña, acompañado de tres vecinos controlados por el ordenador que caminan y
-charlan. Es la manera rápida de enseñar el juego o de trastear con el
-renderizador.
+Y recarga la página.
 
-## Controles
+## Órdenes
 
-| Acción | Cómo |
+```
+./hotel.sh instalar    Clona el stack y descarga los submódulos
+./hotel.sh arrancar    Levanta todo
+./hotel.sh assets      Convierte los SWF a .nitro
+./hotel.sh logs [qué]  Registros: todo | arcturus | nitro
+./hotel.sh estado      Contenedores en marcha
+./hotel.sh sql         Consola de MariaDB
+./hotel.sh reiniciar   Reinicia solo el emulador
+./hotel.sh parar       Para todo, conservando datos
+./hotel.sh borrar      Borra datos y volúmenes (pide confirmación)
+```
+
+## Cómo entras
+
+El `?sso=123` no es una contraseña: es un **ticket de autenticación**. La base
+de datos trae un usuario ya creado, `Systemaccount`, con el ticket `123` en la
+columna `auth_ticket`. El cliente lo canjea al cargar.
+
+En un hotel de verdad ese ticket lo genera el CMS al iniciar sesión. Aquí, como
+es local, lo pones a mano.
+
+### Crear tu propio usuario
+
+```bash
+./hotel.sh sql
+```
+
+```sql
+INSERT INTO users (username, password, mail, account_created, auth_ticket, rank,
+                   credits, ip_register, ip_current, look, motto)
+VALUES ('Alejo', '', 'alejo@local', UNIX_TIMESTAMP(), 'miticket', 7,
+        99999, '127.0.0.1', '127.0.0.1',
+        'hd-180-1.ch-210-66.lg-270-82.sh-290-80', 'Mi hotel');
+```
+
+Y entras con **<http://127.0.0.1:1080?sso=miticket>**.
+
+El `rank` 7 es **Administrator**, que te da los comandos de moderación
+(`:ha`, `:roomkick`, `:teleport`…). Los rangos son: 1 Member, 2 VIP, 4 Support,
+5 Moderator, 6 Super Mod, 7 Administrator.
+
+### Darte créditos
+
+```sql
+UPDATE users SET credits = 999999, pixels = 999999 WHERE username = 'Alejo';
+```
+
+Reinicia el emulador después (`./hotel.sh reiniciar`) o vuelve a entrar.
+
+## Puertos
+
+| Puerto | Qué es |
 | --- | --- |
-| Caminar | Clic en una baldosa |
-| Caminar un paso | Flechas o `WASD` |
-| Sentarse | Camina hasta una silla o un sofá |
-| Hablar | Escribe abajo y pulsa Intro (`Intro` con el foco fuera enfoca el chat) |
-| Mover la cámara | Arrastrar con el botón central, o `Mayús` + arrastrar |
-| Zoom | Rueda del ratón |
-| Construir | Botón «Construir»: clic coloca, clic en un mueble lo gira, clic derecho lo quita |
+| 1080 | El cliente Nitro — **es el que abres en el navegador** |
+| 2096 | WebSocket del emulador (por donde habla el cliente) |
+| 3000 | Puerto del juego (clientes Flash antiguos) |
+| 3001 | RCON, para que el CMS hable con el emulador |
+| 8080 | Servidor de assets `.nitro` |
+| 8081 | Servidor de SWF |
+| 13306 | MariaDB, si te quieres conectar con un cliente de escritorio |
 
-Comandos de chat: `/ayuda`, `/saludo`, `/baile`, `/sala <id>`, `/salas`,
-`/centrar`, `/limpiar`.
+⚠️ **El puerto 2096 choca con el servidor de `juego-propio/`.** No ejecutes los
+dos a la vez, o arranca aquel en otro puerto:
+`cd juego-propio && PORT=2098 npm run dev:server`.
 
-## Scripts
+## Configuración
 
-| Script | Qué hace |
+Después de `instalar`, los archivos están en `stack/`:
+
+| Archivo | Para qué |
 | --- | --- |
-| `npm run dev` | Servidor de juego + cliente con recarga en caliente |
-| `npm run dev:server` | Solo el servidor (puerto 2096) |
-| `npm run dev:client` | Solo el cliente (puerto 5173) |
-| `npm run typecheck` | Comprobación de tipos |
-| `npm test` | Prueba de humo de extremo a extremo contra el servidor |
-| `npm run build` | Compila el cliente a `dist/` |
-| `npm run build:demo` | Empaqueta la demo en un único `dist-single/hotel.html` |
-| `npm start` | Arranca solo el servidor (producción) |
+| `emulator/config.ini` | Base de datos, puertos, ajustes del emulador |
+| `nitro/configuration/nitro-react/public/renderer-config.json` | URLs del cliente, FPS, opciones de render |
+| `nitro/configuration/nitro-react/public/ui-config.json` | Qué muestra la interfaz |
+| `mysql/dumps/` | La base de datos inicial |
 
-## Cómo está organizado
+Tras tocar la configuración de Nitro, reinicia ese contenedor. Tras tocar
+`config.ini`, usa `./hotel.sh reiniciar`.
 
-```
-src/
-├── shared/      Código que comparten cliente y servidor
-│   ├── constants.ts    Medidas de la baldosa, ritmo del paso, límites
-│   ├── types.ts        Avatares, muebles y su catálogo
-│   ├── iso.ts          Matemática isométrica (baldosa ⇄ pantalla, direcciones)
-│   ├── pathfinding.ts  A* sobre la rejilla, con alturas y sin recortar esquinas
-│   ├── rooms.ts        Definición de las salas como mapas de texto
-│   └── protocol.ts     Todos los mensajes de red, tipados
-├── server/
-│   ├── index.ts        Arranque
-│   ├── Hotel.ts        Las reglas del juego, sin saber nada de red
-│   ├── GameServer.ts   Adaptador de WebSockets sobre el Hotel
-│   └── Room.ts         Simulación autoritativa de una sala
-├── client/
-│   ├── main.ts         Entrada del cliente normal
-│   ├── game.ts         Interacción y bucle de dibujado
-│   ├── transport.ts    El canal con el servidor, como interfaz
-│   ├── net.ts          WebSocket, reconexión y sincronía de relojes
-│   ├── state.ts        Estado local e interpolación del movimiento
-│   ├── markup.ts       La interfaz en HTML, compartida por las dos entradas
-│   ├── ui.ts           Login, HUD, listas y chat
-│   └── render/         Renderizador isométrico y arte procedural
-└── demo/               La versión sin servidor: hotel en la pestaña + bots
-```
+## Si algo falla
 
-## Cómo funciona por dentro
+**Se queda en el 20 %.** Faltan assets. `./hotel.sh assets`. Si persiste,
+mira los registros del cliente: suele faltar `ExternalText`.
 
-**Las reglas no saben de red.** `Hotel` contiene el juego entero —salas,
-jugadores, validación— y solo habla mediante mensajes. `GameServer` le enchufa
-WebSockets y la demo le enchufa llamadas directas dentro del navegador. Por eso
-la demo no es una maqueta: es el mismo servidor, sin cable de por medio.
+**«port is already allocated».** Tienes algo ocupando 1080, 2096, 3000 o 13306.
+Mira con `lsof -i :2096` (o `netstat -ano | findstr 2096` en Windows). Recuerda
+que nuestro juego usa el 2096.
 
-**El servidor manda.** El cliente nunca decide dónde está su avatar: pide
-«quiero ir a la baldosa (x, y)» y el servidor calcula el camino, comprueba que
-sea posible y lo difunde a toda la sala. Así nadie puede atravesar paredes ni
-teletransportarse tocando el código del navegador.
+**El emulador no conecta con la base de datos.** MariaDB tarda más en arrancar
+la primera vez. `./hotel.sh reiniciar` suele bastar.
 
-**El movimiento se envía una sola vez.** En lugar de mandar posiciones cada
-fotograma, el servidor envía el camino completo con la marca de tiempo de
-salida. Cada cliente reproduce esa animación gastando `STEP_MS` por baldosa.
-Como el cliente mide el desfase de relojes con el ida y vuelta del *ping*, todos
-los jugadores ven el mismo movimiento aunque tengan latencias distintas.
+**Parece colgado en el primer arranque.** Compila el emulador con Maven y hace
+`yarn install` del cliente. 5-10 minutos es lo esperado; míralo con `logs`.
 
-**Las salas son texto.** Cada sala es una lista de cadenas donde `x` es vacío,
-`D` es la puerta y los dígitos son la altura del suelo. Añadir una sala nueva es
-escribir un mapa en `src/shared/rooms.ts`:
+**Quiero empezar de cero.** `./hotel.sh borrar` y luego `arrancar`.
 
-```ts
-map: [
-  'xxxxxx',
-  'x0000x',
-  'x0110x',   // 1 = un nivel más alto
-  'D0000x',   // D = puerta
-  'xxxxxx',
-],
-```
+## Créditos
 
-El buscador de caminos deja subir o bajar un nivel entre baldosas contiguas,
-pero no en diagonal, que es lo que hace que las escaleras se vean bien.
+`hotel.sh` solo automatiza el arranque. El trabajo real es de:
 
-**El dibujo va por niveles.** El suelo se pinta agrupado por altura y, dentro de
-cada altura, de atrás hacia delante. Pintar los niveles altos al final es lo que
-hace que el escalón de una plataforma tape correctamente el suelo que tiene
-delante. Los avatares y los muebles se ordenan después por profundidad (`x + y`).
-
-## ¿Y una réplica exacta de Habbo?
-
-Este proyecto es un juego propio con arte original. Si lo que quieres es montar
-en tu PC una réplica idéntica al Habbo original, eso es otro camino: el
-ecosistema open source de la comunidad (emulador Arcturus Morningstar + cliente
-Nitro). Está en [`retro/`](retro/README.md), con un script que lo levanta en
-tres órdenes.
-
-Ojo: el emulador y el cliente son libres, pero los assets son de Sulake, así que
-es para uso local y privado. El directorio los mantiene fuera de Git.
-
-## Ideas para seguir
-
-- Persistir los muebles y los perfiles (ahora todo vive en memoria).
-- Salas creadas por los jugadores, con permisos de quién puede construir.
-- Inventario y catálogo con monedas, en vez de muebles infinitos.
-- Susurros, amigos y lista de ignorados.
-- Más gestos y animaciones (sentarse en el suelo, tumbarse, dormir).
-
-## Licencia
-
-Código propio, sin recursos de terceros. Úsalo como quieras.
+- [Arcturus Morningstar](https://git.krews.org/morningstar/Arcturus-Community) — el emulador
+- [nitro-react](https://github.com/billsonnn/nitro-react) y [nitro-converter](https://github.com/billsonnn/nitro-converter) — el cliente HTML5
+- [nitro-docker](https://github.com/Holo5/nitro-docker) — el entorno Docker que este script maneja
