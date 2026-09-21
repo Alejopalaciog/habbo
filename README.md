@@ -29,9 +29,10 @@ Todo corre en Docker, aislado de tu sistema.
 
 - **Docker Desktop** arrancado (en Windows, con WSL2 activado)
 - **Git**
-- Unos **10 GB** libres y paciencia: dos de los submódulos son paquetes de
-  assets de **varios gigas**, así que `instalar` puede tardar de media hora a
-  varias horas según tu conexión. Es descarga, no un cuelgue: `hotel.cmd
+- Unos **10 GB** libres y paciencia. Tiempos medidos en una instalación real:
+  `instalar` descarga 1,6 GB (el grueso es `nitro-swf`, 866 MB) y depende por
+  completo de tu conexión; `arrancar` compila el emulador en unos 5 minutos; y
+  `assets` tarda alrededor de **30 minutos** convirtiendo los SWF. Es descarga, no un cuelgue: `hotel.cmd
   diagnostico` te dice en otra ventana cuánto lleva bajado. Puedes cortar con
   Ctrl+C y reanudar: no repite lo ya descargado.
 
@@ -89,6 +90,18 @@ Y recarga la página.
 ./hotel.sh parar       Para todo, conservando datos
 ./hotel.sh borrar      Borra datos y volúmenes (pide confirmación)
 ```
+
+## El día a día
+
+Una vez instalado no hay que repetir nada de lo anterior:
+
+```
+hotel.cmd parar       # apagar el hotel
+hotel.cmd arrancar    # volver a encenderlo
+hotel.cmd estado      # ver qué está en marcha
+```
+
+Los assets convertidos y la base de datos se conservan entre arranques.
 
 ## Cómo entras
 
@@ -176,6 +189,9 @@ dentro del contenedor: el emulador se está compilando todavía. Usa
 
 **El emulador no conecta con la base de datos.** MariaDB tarda más en arrancar
 la primera vez. `./hotel.sh reiniciar` suele bastar.
+
+**`Invalid SWF: cow` al convertir los assets.** Inofensivo: una única mascota
+del paquete de origen viene corrupta. Todo lo demás se convierte bien.
 
 **¿Cómo salgo de `logs`?** Con Ctrl+C (y `Y` si cmd pregunta *Terminate batch
 job*). Solo deja de mostrar los registros: los contenedores siguen en marcha.
