@@ -89,7 +89,8 @@ orden_instalar() {
     info "El stack ya está clonado en retro/stack; actualizo los submódulos."
   else
     info "Clonando el stack (emulador, cliente y assets)..."
-    git clone "$ORIGEN" "$STACK"
+    # core.autocrlf=false evita que Git convierta a CRLF en Windows.
+    git -c core.autocrlf=false -c core.eol=lf clone "$ORIGEN" "$STACK"
   fi
 
   git -C "$STACK" submodule init
@@ -118,18 +119,23 @@ AVISO
     # paquetes de assets multiplica el tamaño. Si el submódulo apunta a un
     # commit que no es la punta de su rama, el atajo falla y vamos a por
     # el historial completo.
-    if ! git -C "$STACK" submodule update --init --depth 1 --progress "$ruta"; then
+    if ! git -C "$STACK" -c core.autocrlf=false -c core.eol=lf \
+           submodule update --init --depth 1 --progress "$ruta"; then
       gris "  sin atajo posible; descargando el historial completo de $ruta"
-      git -C "$STACK" submodule update --init --progress "$ruta"
+      git -C "$STACK" -c core.autocrlf=false -c core.eol=lf \
+        submodule update --init --progress "$ruta"
     fi
   done
 
+  normalizar_finales_de_linea
   verde "Listo. Ahora:  $YO arrancar"
 }
 
 orden_arrancar() {
   comprobar_requisitos
   [ -d "$STACK" ] || { rojo "Primero ejecuta: ./hotel.sh instalar"; exit 1; }
+
+  normalizar_finales_de_linea
 
   info "Levantando MariaDB, Arcturus y Nitro..."
   compose up -d
@@ -169,6 +175,31 @@ orden_assets() {
   docker exec -i nitro bash -c "rsync -r /app/nitro-converter/assets/* /app/nitro-assets/"
 
   verde "Assets listos. Recarga http://127.0.0.1:1080?sso=123"
+}
+
+# Los contenedores son Linux, pero el clon se hace en el sistema de quien
+# instala. Si es Windows, Git suele convertir los scripts a CRLF y dentro del
+# contenedor ese \r invisible se pega al final de cada línea: rompe rutas
+# ("no existe /app/supervisor/supervisord.conf\r"), URLs (wget devuelve 400) y
+# cualquier orden. Aquí se devuelven a LF los archivos que ejecuta el contenedor.
+normalizar_finales_de_linea() {
+  local archivo arreglados=0
+  while IFS= read -r archivo; do
+    # Solo se reescribe si de verdad lleva CR, para no tocar por tocar.
+    if grep -qU $'\r' "$archivo" 2>/dev/null; then
+      # Se quitan TODOS los CR, no solo los del final de línea: algunos de
+      # estos archivos ya vienen con CRLF desde su repositorio de origen, y
+      # dejar uno suelto rompía igual y hacía que la reparación no fuese
+      # idempotente.
+      sed -i 's/\r//g' "$archivo"
+      arreglados=$((arreglados + 1))
+    fi
+  done < <(find "$STACK" -name .git -prune -o -type f \
+             \( -name '*.sh' -o -name '*.conf' -o -name '*.ini' -o -name '*.cnf' \) -print)
+
+  if [ "$arreglados" -gt 0 ]; then
+    info "Finales de línea corregidos en $arreglados archivo(s) del stack."
+  fi
 }
 
 # ¿Está supervisor en marcha dentro de un contenedor? Durante el primer
@@ -251,6 +282,17 @@ orden_borrar() {
   verde "Todo limpio. El código sigue en retro/stack."
 }
 
+orden_reparar() {
+  comprobar_requisitos
+  [ -d "$STACK" ] || { rojo "Primero ejecuta: $YO instalar"; exit 1; }
+  info "Revisando los finales de línea del stack..."
+  normalizar_finales_de_linea
+  info "Recreando los contenedores para que vuelvan a ejecutar los scripts..."
+  compose down
+  compose up -d
+  verde "Hecho. Sigue el progreso con:  $YO logs arcturus"
+}
+
 orden_diagnostico() {
   echo "Carpeta del stack: $STACK"
   if [ ! -d "$STACK" ]; then
@@ -286,6 +328,7 @@ Hotel local — emulador Arcturus + cliente Nitro
                          o del proceso ya en marcha: emulador | cliente
   ./hotel.sh estado      Qué contenedores hay en marcha
   ./hotel.sh diagnostico Qué submódulos faltan y cuánto ocupan
+  ./hotel.sh reparar     Arregla finales de línea y recrea los contenedores
   ./hotel.sh sql         Abre la consola de MariaDB
   ./hotel.sh reiniciar   Reinicia solo el emulador
   ./hotel.sh parar       Para todo, conservando los datos
@@ -305,6 +348,7 @@ case "${1:-ayuda}" in
   logs)       shift; orden_logs "${1:-todo}" ;;
   estado)     orden_estado ;;
   diagnostico|diagnóstico) orden_diagnostico ;;
+  reparar)    orden_reparar ;;
   sql)        orden_sql ;;
   reiniciar)  orden_reiniciar ;;
   parar)      orden_parar ;;
