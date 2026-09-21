@@ -35,7 +35,8 @@ Todo corre en Docker, aislado de tu sistema.
 
 ### Windows (cmd.exe o PowerShell)
 
-Usa `hotel.cmd`, que busca Git Bash o WSL por ti:
+Usa `hotel.cmd`, que localiza Git Bash por ti. **Lanza las órdenes de una en
+una**: `instalar` descarga cientos de megas y `arrancar` tarda varios minutos.
 
 ```bat
 hotel.cmd instalar
@@ -170,6 +171,10 @@ la primera vez. `./hotel.sh reiniciar` suele bastar.
 **En cmd.exe: «'.' no se reconoce como un comando interno o externo».** Estás
 usando sintaxis de bash en la consola de Windows. Usa `hotel.cmd instalar`, o
 abre Git Bash.
+
+**`/bin/bash: C:\...\hotel.sh: No such file or directory`.** Se está usando el
+bash de WSL, que no entiende rutas de Windows. `hotel.cmd` busca Git Bash
+expresamente para evitarlo; si ves este error, actualiza el repositorio.
 
 **En Git Bash: «$'\r': command not found».** El script se descargó con finales
 de línea de Windows. El `.gitattributes` del repositorio lo evita, pero si
