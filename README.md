@@ -165,6 +165,10 @@ mira los registros del cliente: suele faltar `ExternalText`.
 Mira con `lsof -i :2096` (o `netstat -ano | findstr 2096` en Windows). Recuerda
 que nuestro juego usa el 2096.
 
+**«No consigo hablar con Docker» pero `docker ps` te funciona.** No debería
+pasar: el script sondea con `docker ps` y te enseña la respuesta literal de
+Docker. Pásame ese texto.
+
 **El emulador no conecta con la base de datos.** MariaDB tarda más en arrancar
 la primera vez. `./hotel.sh reiniciar` suele bastar.
 

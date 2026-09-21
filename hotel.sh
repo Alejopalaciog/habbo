@@ -48,9 +48,19 @@ comprobar_requisitos() {
   done
   [ "$faltan" -eq 0 ] || exit 1
 
-  if ! docker info >/dev/null 2>&1; then
-    rojo "Docker está instalado pero no está arrancado."
-    gris "Abre Docker Desktop (o arranca el servicio) y vuelve a intentarlo."
+  # Se sondea con `docker ps`, no con `docker info`: este último consulta
+  # plugins y contextos, tarda más y en Docker Desktop llega a devolver error
+  # con el demonio perfectamente vivo. Y se enseña lo que responde Docker en
+  # vez de tragárselo, que si no es imposible saber qué pasa.
+  local salida
+  if ! salida="$(docker ps --format '{{.ID}}' 2>&1)"; then
+    rojo "No consigo hablar con Docker."
+    echo
+    gris "Docker respondió:"
+    printf '%s\n' "$salida" | sed 's/^/    /'
+    echo
+    gris "Si Docker Desktop está abierto y 'docker ps' te funciona en otra"
+    gris "consola, el problema está aquí y no en tu equipo: cuéntamelo."
     exit 1
   fi
   detectar_compose
