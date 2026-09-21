@@ -210,6 +210,8 @@ supervisor_listo() {
 
 orden_logs() {
   comprobar_requisitos
+  gris "Ctrl+C para dejar de mirar. El hotel sigue funcionando."
+  echo
   case "${1:-todo}" in
     todo)
       compose logs -f

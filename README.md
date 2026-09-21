@@ -177,6 +177,10 @@ dentro del contenedor: el emulador se está compilando todavía. Usa
 **El emulador no conecta con la base de datos.** MariaDB tarda más en arrancar
 la primera vez. `./hotel.sh reiniciar` suele bastar.
 
+**¿Cómo salgo de `logs`?** Con Ctrl+C (y `Y` si cmd pregunta *Terminate batch
+job*). Solo deja de mostrar los registros: los contenedores siguen en marcha.
+Para pararlos de verdad, `hotel.cmd parar`.
+
 **`instalar` lleva horas.** Lo normal si tu conexión no es rápida: el paquete
 de SWF y el de assets por defecto pesan varios gigas cada uno. Abre otra
 ventana y ejecuta `hotel.cmd diagnostico` para ver qué falta y cuánto lleva.
