@@ -8,6 +8,8 @@ hotel.cmd sala <nombre> [usuario]
 
 | Archivo | Qué es |
 | --- | --- |
+| `publicas.sql` | Las 17 salas públicas del hotel |
+| `generar-publicas.py` | Las genera, verificando que cada modelo exista |
 | `guerra-vip.sql` | La sala Guerra VIP, lista para cargar |
 | `guerra-vip.plantilla.sql` | Plantilla del SQL, con huecos que rellena el generador |
 | `generar.py` | Genera el SQL: diseña el mapa, lo comprueba y lo escribe |

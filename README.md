@@ -151,6 +151,25 @@ hotel.cmd sala guerra-vip TuNombre
 Crea el mapa, la sala y los muebles, y reinicia el emulador para que la vea.
 Se puede repetir: borra su versión anterior antes de crearla.
 
+### Salas públicas
+
+Arcturus trae los **60 modelos** de las salas públicas clásicas —vestíbulo,
+parque, cine, pub, azotea…— pero **ninguna sala creada con ellos**, y la tabla
+`navigator_publics` viene vacía. Por eso el navegador aparece sin ninguna sala
+oficial. Esto crea 17:
+
+```
+hotel.cmd sala publicas
+```
+
+Las salas pertenecen a la cuenta de sistema, así que si vuelves a ejecutarlo
+solo borra y recrea las suyas: **las tuyas no se tocan**. Aparecen en el
+navegador bajo *Staff Picks* y *Official Games*.
+
+Para cambiar la lista, edita `salas/generar-publicas.py` y ejecuta
+`python3 salas/generar-publicas.py`. Verifica contra el volcado que cada
+modelo exista antes de generar nada.
+
 ### Guerra VIP
 
 El clásico de empujar y tirar. Sala plana de **13x8 = 104 baldosas** con un
