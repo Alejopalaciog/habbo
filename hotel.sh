@@ -75,9 +75,37 @@ orden_instalar() {
     git clone "$ORIGEN" "$STACK"
   fi
 
-  info "Descargando submódulos. Son varios cientos de megas: tarda un rato."
   git -C "$STACK" submodule init
-  git -C "$STACK" submodule update --recursive
+
+  cat <<'AVISO'
+
+  Ahora vienen los submódulos. Dos de ellos son paquetes de assets de
+  VARIOS GIGAS, así que esto puede tardar de media hora a varias horas
+  según tu conexión. Verás el progreso de cada uno.
+
+  Puedes cortar con Ctrl+C: al volver a ejecutar "instalar" continúa por
+  donde iba, sin repetir lo ya descargado.
+
+AVISO
+
+  local rutas ruta
+  rutas="$(git -C "$STACK" config --file .gitmodules --get-regexp '^submodule\..*\.path$' | awk '{print $2}')"
+
+  for ruta in $rutas; do
+    if [ -n "$(ls -A "$STACK/$ruta" 2>/dev/null)" ]; then
+      gris "  ya descargado: $ruta"
+      continue
+    fi
+    info "  descargando $ruta ..."
+    # Con --depth 1 se evita descargar todo el historial, que en los
+    # paquetes de assets multiplica el tamaño. Si el submódulo apunta a un
+    # commit que no es la punta de su rama, el atajo falla y vamos a por
+    # el historial completo.
+    if ! git -C "$STACK" submodule update --init --depth 1 --progress "$ruta"; then
+      gris "  sin atajo posible; descargando el historial completo de $ruta"
+      git -C "$STACK" submodule update --init --progress "$ruta"
+    fi
+  done
 
   verde "Listo. Ahora:  ./hotel.sh arrancar"
 }
@@ -166,6 +194,30 @@ orden_borrar() {
   verde "Todo limpio. El código sigue en retro/stack."
 }
 
+orden_diagnostico() {
+  echo "Carpeta del stack: $STACK"
+  if [ ! -d "$STACK" ]; then
+    rojo "Todavía no existe: ejecuta 'instalar'."
+    return
+  fi
+  echo
+  echo "Submódulos:"
+  local rutas ruta tam
+  rutas="$(git -C "$STACK" config --file .gitmodules --get-regexp '^submodule\..*\.path$' | awk '{print $2}')"
+  for ruta in $rutas; do
+    if [ -n "$(ls -A "$STACK/$ruta" 2>/dev/null)" ]; then
+      tam="$(du -sh "$STACK/$ruta" 2>/dev/null | cut -f1)"
+      printf '  %-24s descargado (%s)\n' "$ruta" "${tam:-?}"
+    else
+      printf '  %-24s PENDIENTE\n' "$ruta"
+    fi
+  done
+  echo
+  echo "Total en disco: $(du -sh "$STACK" 2>/dev/null | cut -f1)"
+  echo
+  gris "Si algo sigue PENDIENTE, vuelve a ejecutar 'instalar': continúa donde iba."
+}
+
 orden_ayuda() {
   cat <<'FIN'
 Hotel local — emulador Arcturus + cliente Nitro
@@ -175,6 +227,7 @@ Hotel local — emulador Arcturus + cliente Nitro
   ./hotel.sh assets      Convierte los SWF a .nitro (tras el 1.er arranque)
   ./hotel.sh logs [qué]  Sigue los registros: todo | arcturus | nitro
   ./hotel.sh estado      Qué contenedores hay en marcha
+  ./hotel.sh diagnostico Qué submódulos faltan y cuánto ocupan
   ./hotel.sh sql         Abre la consola de MariaDB
   ./hotel.sh reiniciar   Reinicia solo el emulador
   ./hotel.sh parar       Para todo, conservando los datos
@@ -193,6 +246,7 @@ case "${1:-ayuda}" in
   assets)     orden_assets ;;
   logs)       shift; orden_logs "${1:-todo}" ;;
   estado)     orden_estado ;;
+  diagnostico|diagnóstico) orden_diagnostico ;;
   sql)        orden_sql ;;
   reiniciar)  orden_reiniciar ;;
   parar)      orden_parar ;;

@@ -29,7 +29,11 @@ Todo corre en Docker, aislado de tu sistema.
 
 - **Docker Desktop** arrancado (en Windows, con WSL2 activado)
 - **Git**
-- Unos **10 GB** libres y una conexión decente: la primera vez descarga mucho
+- Unos **10 GB** libres y paciencia: dos de los submódulos son paquetes de
+  assets de **varios gigas**, así que `instalar` puede tardar de media hora a
+  varias horas según tu conexión. Es descarga, no un cuelgue: `hotel.cmd
+  diagnostico` te dice en otra ventana cuánto lleva bajado. Puedes cortar con
+  Ctrl+C y reanudar: no repite lo ya descargado.
 
 ## Puesta en marcha
 
@@ -78,6 +82,7 @@ Y recarga la página.
 ./hotel.sh assets      Convierte los SWF a .nitro
 ./hotel.sh logs [qué]  Registros: todo | arcturus | nitro
 ./hotel.sh estado      Contenedores en marcha
+./hotel.sh diagnostico Qué submódulos faltan y cuánto ocupan
 ./hotel.sh sql         Consola de MariaDB
 ./hotel.sh reiniciar   Reinicia solo el emulador
 ./hotel.sh parar       Para todo, conservando datos
@@ -162,6 +167,12 @@ que nuestro juego usa el 2096.
 
 **El emulador no conecta con la base de datos.** MariaDB tarda más en arrancar
 la primera vez. `./hotel.sh reiniciar` suele bastar.
+
+**`instalar` lleva horas.** Lo normal si tu conexión no es rápida: el paquete
+de SWF y el de assets por defecto pesan varios gigas cada uno. Abre otra
+ventana y ejecuta `hotel.cmd diagnostico` para ver qué falta y cuánto lleva.
+Si el total no crece en varios minutos, entonces sí está atascado: corta con
+Ctrl+C y relanza `instalar`, que continúa donde iba.
 
 **Parece colgado en el primer arranque.** Compila el emulador con Maven y hace
 `yarn install` del cliente. 5-10 minutos es lo esperado; míralo con `logs`.
