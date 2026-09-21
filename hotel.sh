@@ -13,6 +13,13 @@ AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STACK="$AQUI/stack"
 ORIGEN="https://github.com/Holo5/nitro-docker.git"
 
+# Cómo se invoca este script en la consola de quien lo ejecuta, para que los
+# mensajes no manden a nadie a la sintaxis equivocada.
+case "$(uname -s 2>/dev/null)" in
+  MINGW*|MSYS*|CYGWIN*) YO="hotel.cmd" ;;
+  *)                    YO="./hotel.sh" ;;
+esac
+
 rojo()  { printf '\033[31m%s\033[0m\n' "$*"; }
 verde() { printf '\033[32m%s\033[0m\n' "$*"; }
 info()  { printf '\033[36m%s\033[0m\n' "$*"; }
@@ -107,7 +114,7 @@ AVISO
     fi
   done
 
-  verde "Listo. Ahora:  ./hotel.sh arrancar"
+  verde "Listo. Ahora:  $YO arrancar"
 }
 
 orden_arrancar() {
@@ -117,18 +124,19 @@ orden_arrancar() {
   info "Levantando MariaDB, Arcturus y Nitro..."
   compose up -d
 
-  cat <<'FIN'
+  cat <<FIN
 
-  El primer arranque compila el emulador con Maven e instala las
-  dependencias del cliente. Tarda entre 5 y 10 minutos: es normal.
+  El primer arranque descarga las imágenes de Docker, compila el emulador
+  con Maven e instala las dependencias del cliente. Tarda entre 5 y 10
+  minutos, o más la primera vez: es normal.
 
-  Sigue el progreso con:   ./hotel.sh logs
+  Sigue el progreso con:   $YO logs
   Cuando termine, abre:    http://127.0.0.1:1080?sso=123
 
   Si el cliente se queda cargando en torno al 20 %, es que faltan los
   assets convertidos. Ejecuta entonces:
 
-      ./hotel.sh assets
+      $YO assets
 
 FIN
 }
@@ -137,7 +145,7 @@ orden_assets() {
   comprobar_requisitos
   if ! docker ps --format '{{.Names}}' | grep -qx nitro; then
     rojo "El contenedor 'nitro' no está en marcha."
-    gris "Arranca primero con: ./hotel.sh arrancar"
+    gris "Arranca primero con: $YO arrancar"
     exit 1
   fi
 
@@ -215,7 +223,7 @@ orden_diagnostico() {
   echo
   echo "Total en disco: $(du -sh "$STACK" 2>/dev/null | cut -f1)"
   echo
-  gris "Si algo sigue PENDIENTE, vuelve a ejecutar 'instalar': continúa donde iba."
+  gris "Si algo sigue PENDIENTE, vuelve a ejecutar '$YO instalar': continúa donde iba."
 }
 
 orden_ayuda() {
