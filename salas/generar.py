@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Genera salas/guerra-vip.sql: la sala clásica de Guerra VIP.
 
-Una sala plana de 13x8 (104 baldosas) con un camino en S. Los carriles
-seguros alternan con carriles de baldosas que teletransportan al inicio, así
-que desde cualquier punto del camino un solo empujón te elimina. Arriba, la
-zona de combate y unos sofás para quien no quiera pelear.
+Una sala plana de 104 baldosas con un camino en S. Los tramos seguros
+alternan con carriles de baldosas que teletransportan al inicio, así que
+desde cualquier punto del camino un solo empujón elimina. Al final, la zona
+de combate y unos sofás para quien no quiera pelear.
 
-Los identificadores de mueble se leen del volcado de Arcturus, no se inventan.
-Antes de escribir nada comprueba que el laberinto tiene sentido.
+Los identificadores de mueble se leen del volcado de Arcturus, no se
+inventan. Antes de escribir nada comprueba que el laberinto tiene sentido.
 
 Uso:  python3 salas/generar.py
 """
@@ -15,10 +15,11 @@ import os
 import sys
 from collections import deque
 
-import lib_items
-
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
+
+import lib_items  # noqa: E402  (necesita AQUI en sys.path)
+
 VOLCADO = os.path.join(AQUI, '..', 'stack', 'mysql', 'dumps',
                        'arcturus_3.0.0-stable_base_database--compact.sql')
 SALIDA = os.path.join(AQUI, 'guerra-vip.sql')
@@ -26,19 +27,15 @@ SALIDA = os.path.join(AQUI, 'guerra-vip.sql')
 NECESARIOS = ('tile_stackmagic', 'sofachair_silo',
               'wf_trg_walks_on_furni', 'wf_act_teleport_to')
 
-# Sala plana: 13 de ancho por 8 de fondo = 104 baldosas, con borde de pared.
-ANCHO_INT, FONDO_INT = 13, 8
-ANCHO, ALTO = ANCHO_INT + 2, FONDO_INT + 2
-X0, Y0 = 1, 1
-X1, Y1 = X0 + ANCHO_INT - 1, Y0 + FONDO_INT - 1      # (13, 8)
+# Hacia dónde corren los carriles, en coordenadas de PANTALLA.
+#
+#   En isométrico, aumentar X se ve hacia abajo-derecha y aumentar Y hacia
+#   abajo-izquierda. Los carriles de la sala original corren en diagonal
+#   hacia arriba-derecha, que es el eje Y. Con 'x' salen girados 90 grados.
+EJE_CARRILES = 'y'
 
-PUERTA = (0, Y1)              # se entra por la esquina delantera izquierda
-INICIO = (X0, Y1)             # adonde devuelve el teletransporte
-SOFAS = [(x, Y0) for x in range(X1 - 3, X1 + 1)]     # zona azul, al fondo
-
-# Carriles trampa y por qué lado los esquiva el camino.
-#   fila -> columna que queda libre (el codo de la S)
-CARRILES = {Y1 - 1: X1, Y1 - 3: X0, Y1 - 5: X1}      # filas 7, 5 y 3
+# Sala plana: 13 x 8 = 104 baldosas, más un borde para las paredes.
+LARGO, ANCHO_SALA = 13, 8
 
 
 def catalogo():
@@ -57,29 +54,55 @@ def catalogo():
 
 
 def disenar():
-    """Devuelve el mapa y las baldosas trampa."""
-    mapa = [['x'] * ANCHO for _ in range(ALTO)]
-    for y in range(Y0, Y1 + 1):
-        for x in range(X0, X1 + 1):
+    """Diseña la sala con los carriles a lo largo de X, y la transpone si
+    hace falta. Devuelve el mapa y un diccionario de zonas."""
+    ancho, alto = LARGO + 2, ANCHO_SALA + 2
+    x0, y0 = 1, 1
+    x1, y1 = LARGO, ANCHO_SALA
+
+    mapa = [['x'] * ancho for _ in range(alto)]
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
             mapa[y][x] = '0'
-    mapa[PUERTA[1]][PUERTA[0]] = '0'          # el hueco de la puerta
 
+    puerta = (0, y1)                 # se entra por la esquina de delante
+    inicio = (x0, y1)                # adonde devuelve el teletransporte
+    esquina = (x0, y0)               # donde van los muebles wired
+    combate = [(x, y0) for x in range(x0, x1 + 1)]
+    sofas = [(x, y0) for x in range(x1 - 3, x1 + 1)]
+    mapa[puerta[1]][puerta[0]] = '0'
+
+    # Carriles trampa, con el codo de la S alternando de lado.
     trampas = []
-    for fila, codo in CARRILES.items():
-        for x in range(X0, X1 + 1):
-            if x != codo:
-                trampas.append((x, fila))
-    return mapa, trampas
+    for fila, codo in ((y1 - 1, x1), (y1 - 3, x0), (y1 - 5, x1)):
+        trampas += [(x, fila) for x in range(x0, x1 + 1) if x != codo]
+
+    zonas = {'puerta': puerta, 'inicio': inicio, 'esquina': esquina,
+             'combate': combate, 'sofas': sofas}
+
+    if EJE_CARRILES == 'y':
+        girado = [['x'] * alto for _ in range(ancho)]
+        for y in range(alto):
+            for x in range(ancho):
+                girado[x][y] = mapa[y][x]
+        mapa = girado
+        ancho, alto = alto, ancho
+        trampas = [(y, x) for x, y in trampas]
+        for k, v in zonas.items():
+            zonas[k] = (v[1], v[0]) if isinstance(v, tuple) else [(b, a) for a, b in v]
+
+    return mapa, trampas, zonas, (ancho, alto)
 
 
-def comprobar(mapa, trampas):
-    """El laberinto tiene que ser resoluble, y peligroso."""
+def comprobar(mapa, trampas, zonas, medidas):
+    ancho, alto = medidas
     peligro = set(trampas)
-    seguras = {(x, y) for y in range(ALTO) for x in range(ANCHO)
+    seguras = {(x, y) for y in range(alto) for x in range(ancho)
                if mapa[y][x] != 'x' and (x, y) not in peligro}
 
-    # 1) Se llega arriba sin pisar una sola trampa.
-    vistos, cola = {PUERTA}, deque([PUERTA])
+    # 1) Se llega a la zona de combate sin pisar una sola trampa.
+    puerta = zonas['puerta']
+    vistos, cola = {puerta}, deque([puerta])
     while cola:
         x, y = cola.popleft()
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
@@ -87,67 +110,68 @@ def comprobar(mapa, trampas):
             if p in seguras and p not in vistos:
                 vistos.add(p)
                 cola.append(p)
-    arriba = [(x, Y0) for x in range(X0, X1 + 1)]
-    if not all(p in vistos for p in arriba):
+    if not all(p in vistos for p in zonas['combate']):
         sys.exit('No se llega a la zona de combate sin pisar trampas')
-    print('  se llega arriba por el camino seguro, sin pisar ninguna trampa')
+    print('  se llega al final por el camino seguro, sin pisar ninguna trampa')
 
-    # 2) El camino es realmente estrecho: cada carril seguro entre trampas
-    #    tiene trampa al norte y al sur, así que un empujón basta.
-    expuestas = 0
-    for (x, y) in seguras:
-        if not (X0 <= x <= X1 and Y0 <= y <= Y1):
-            continue
-        if any((x + dx, y + dy) in peligro for dx, dy in ((0, 1), (0, -1))):
-            expuestas += 1
-    total = ANCHO_INT * FONDO_INT - len(trampas)
-    print('  %d de %d baldosas seguras están pegadas a una trampa' % (expuestas, total))
+    # 2) El camino está expuesto: cada tramo tiene trampa a ambos lados.
+    lados = ((0, 1), (0, -1)) if EJE_CARRILES == 'x' else ((1, 0), (-1, 0))
+    expuestas = sum(1 for p in seguras if p != puerta
+                    and any((p[0] + dx, p[1] + dy) in peligro for dx, dy in lados))
+    total = LARGO * ANCHO_SALA - len(trampas)
+    print('  %d de %d baldosas seguras tienen una trampa pegada' % (expuestas, total))
     if expuestas < total * 0.5:
-        sys.exit('El camino no es lo bastante expuesto: revisa los carriles')
+        sys.exit('El camino no está lo bastante expuesto')
 
-    # 3) Exactamente 104 baldosas de suelo, como la sala original.
-    suelo = sum(1 for y in range(Y0, Y1 + 1) for x in range(X0, X1 + 1)
-                if mapa[y][x] != 'x')
+    # 3) Exactamente 104 baldosas, sin contar el hueco de la puerta.
+    suelo = sum(1 for y in range(alto) for x in range(ancho) if mapa[y][x] != 'x') - 1
     print('  la sala mide %d baldosas' % suelo)
-    if suelo != 104:
-        sys.exit('La sala deberia tener 104 baldosas')
+    if suelo != LARGO * ANCHO_SALA:
+        sys.exit('La sala debería medir %d baldosas' % (LARGO * ANCHO_SALA))
 
 
-def dibujar(mapa, trampas):
-    peligro = set(trampas)
-    sofas = set(SOFAS)
-    for y in range(ALTO):
+def dibujar(mapa, trampas, zonas, medidas):
+    ancho, alto = medidas
+    peligro, sofas = set(trampas), set(zonas['sofas'])
+    combate = set(zonas['combate'])
+    for y in range(alto):
         fila = ''
-        for x in range(ANCHO):
+        for x in range(ancho):
+            p = (x, y)
             if mapa[y][x] == 'x':
                 fila += '.'
-            elif (x, y) in peligro:
+            elif p in peligro:
                 fila += 'R'
-            elif (x, y) in sofas:
+            elif p in sofas:
                 fila += 'A'
-            elif (x, y) == INICIO:
+            elif p == zonas['inicio']:
                 fila += 'I'
-            elif y == Y0:
+            elif p == zonas['esquina']:
+                fila += 'W'
+            elif p in combate:
                 fila += 'P'
             else:
                 fila += 'V'
         print('  %2d %s' % (y, fila))
-    print('\n  . pared   V camino seguro   R trampa   P combate   A sofá   I inicio')
+    print('\n  . pared   V camino   R trampa   P combate   A sofá'
+          '   I inicio   W wired')
+    print('  en pantalla: X baja hacia la derecha, Y baja hacia la izquierda')
 
 
-def escribir_sql(mapa, trampas, base):
+def escribir_sql(mapa, trampas, zonas, base):
     heightmap = '\\r\\n'.join(''.join(f) for f in mapa)
-    wx, wy = X0, Y0            # los wired, en la esquina del fondo
+    rx, ry = zonas['inicio']
+    wx, wy = zonas['esquina']
     filas = ",\n".join("       (@propietario, @sala, %d, %d, %d, 0, 0, '')"
                        % (base['tile_stackmagic']['id'], x, y) for x, y in trampas)
     sofas = ",\n".join("       (@propietario, @sala, %d, %d, %d, 0, 2, '')"
-                       % (base['sofachair_silo']['id'], x, y) for x, y in SOFAS)
+                       % (base['sofachair_silo']['id'], x, y) for x, y in zonas['sofas'])
     plantilla = open(os.path.join(AQUI, 'guerra-vip.plantilla.sql'),
                      encoding='utf8').read()
     return plantilla.format(
-        n=len(trampas), dx=PUERTA[0], dy=PUERTA[1], hm=heightmap,
-        traps=filas, sofas=sofas, nsofas=len(SOFAS),
-        dest=base['tile_stackmagic']['id'], rx=INICIO[0], ry=INICIO[1],
+        n=len(trampas), dx=zonas['puerta'][0], dy=zonas['puerta'][1],
+        hm=heightmap, traps=filas, sofas=sofas, nsofas=len(zonas['sofas']),
+        dest=base['tile_stackmagic']['id'], rx=rx, ry=ry,
         trg=base['wf_trg_walks_on_furni']['id'],
         act=base['wf_act_teleport_to']['id'], wx=wx, wy=wy,
         zact=base['wf_trg_walks_on_furni']['h'])
@@ -158,12 +182,13 @@ def main():
     print('Muebles localizados en el catálogo:')
     for nombre in NECESARIOS:
         print('  %-24s id=%d' % (nombre, base[nombre]['id']))
-    mapa, trampas = disenar()
+    mapa, trampas, zonas, medidas = disenar()
+    print('\nCarriles a lo largo del eje %s' % EJE_CARRILES.upper())
     print('\nComprobaciones:')
-    comprobar(mapa, trampas)
+    comprobar(mapa, trampas, zonas, medidas)
     print('\n  %d baldosas trampa\n' % len(trampas))
-    dibujar(mapa, trampas)
-    open(SALIDA, 'w', encoding='utf8').write(escribir_sql(mapa, trampas, base))
+    dibujar(mapa, trampas, zonas, medidas)
+    open(SALIDA, 'w', encoding='utf8').write(escribir_sql(mapa, trampas, zonas, base))
     print('\nEscrito: %s' % SALIDA)
 
 

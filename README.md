@@ -160,15 +160,25 @@ trampa arriba y abajo, **un solo empujón elimina**. Al fondo, la zona de
 combate y unos sofás para quien prefiera mirar.
 
 ```
- .PPPPPPPPPAAAA.     P combate   A sofás
- .VVVVVVVVVVVVV.     V camino seguro
- .RRRRRRRRRRRRV.     R baldosa que teletransporta
- .VVVVVVVVVVVVV.
- .VRRRRRRRRRRRR.
- .VVVVVVVVVVVVV.
- .RRRRRRRRRRRRV.
- VIVVVVVVVVVVVV.     I punto de reaparición
+ ........V.      . pared      V camino seguro
+ .WVRVVVRI.      R baldosa que teletransporta
+ .PVRVRVRV.      P zona de combate
+ .PVRVRVRV.      A sofás
+ .PVRVRVRV.      I punto de reaparición
+ .PVRVRVRV.      W muebles wired
+ .PVRVRVRV.
+ .PVRVRVRV.      Los carriles corren a lo largo del eje Y, que en
+ .PVRVRVRV.      pantalla es la diagonal hacia arriba-derecha. El eje X
+ .PVRVRVRV.      baja hacia la derecha.
+ .AVRVRVRV.
+ .AVRVRVRV.
+ .AVRVRVRV.
+ .AVVVRVVV.
+ ..........
 ```
+
+La orientación se cambia con `EJE_CARRILES` en `salas/generar.py`: con `'x'`
+los carriles salen girados 90 grados.
 
 **Después de cargarla quedan dos cosas por hacer**, porque no se pueden dejar
 resueltas desde la base de datos:
