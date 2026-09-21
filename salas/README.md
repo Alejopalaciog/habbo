@@ -8,6 +8,8 @@ hotel.cmd sala <nombre> [usuario]
 
 | Archivo | Qué es |
 | --- | --- |
+| `muestrario.sql` | Sala con todas las baldosas del catálogo, para elegir a ojo |
+| `generar-muestrario.py` | La genera a partir del catálogo |
 | `publicas.sql` | Las 17 salas públicas del hotel |
 | `generar-publicas.py` | Las genera, verificando que cada modelo exista |
 | `guerra-vip.sql` | La sala Guerra VIP, lista para cargar |
@@ -29,6 +31,10 @@ Antes de escribir nada, el generador comprueba tres cosas:
 - que la sala mide exactamente 104 baldosas, como la original.
 
 Si alguna falla, aborta sin tocar el SQL.
+
+Los comentarios al final de las líneas de un `VALUES` no pueden llevar el
+punto y coma pegado: quedaría comentado y la sentencia se fundiría con la
+siguiente. El validador de `guerra-vip.sql` pilló exactamente eso.
 
 `lib_items.py` lee el catálogo de muebles del volcado. Tiene su propio
 analizador porque los nombres traen comillas escapadas que descuadran

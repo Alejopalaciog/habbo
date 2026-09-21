@@ -170,6 +170,17 @@ Para cambiar la lista, edita `salas/generar-publicas.py` y ejecuta
 `python3 salas/generar-publicas.py`. Verifica contra el volcado que cada
 modelo exista antes de generar nada.
 
+### Muestrario de baldosas
+
+Para elegir los colores de una sala sin adivinar, esta trae las 30 baldosas
+1x1 planas y pisables del catálogo, separadas para distinguirlas:
+
+```
+hotel.cmd sala muestrario Alejo
+```
+
+Recórrela y haz clic en cada una para ver su nombre.
+
 ### Guerra VIP
 
 El clásico de empujar y tirar. Sala plana de **13x8 = 104 baldosas** con un
