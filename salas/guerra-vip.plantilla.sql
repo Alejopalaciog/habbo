@@ -54,9 +54,9 @@ INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
 VALUES
 {sofas};
 
--- --- Destino del teletransporte: la baldosa de entrada -----------------
---  OJO: es una baldosa magica igual que las trampas, pero esta suelta en
---  la esquina de entrada. No la selecciones como trampa en el wired.
+-- --- Destino del teletransporte: la alfombra de la entrada -------------
+--  Es una alfombra, distinta a simple vista de las baldosas trampa, para
+--  no confundirlas al seleccionarlas en el wired.
 INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
 VALUES (@propietario, @sala, {dest}, {rx}, {ry}, 0, 0, '');
 

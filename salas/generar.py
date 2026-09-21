@@ -24,7 +24,12 @@ VOLCADO = os.path.join(AQUI, '..', 'stack', 'mysql', 'dumps',
                        'arcturus_3.0.0-stable_base_database--compact.sql')
 SALIDA = os.path.join(AQUI, 'guerra-vip.sql')
 
-NECESARIOS = ('tile_stackmagic', 'sofachair_silo',
+# `floortile` es la baldosa de suelo clasica: 1x1, plana, pisable y con
+# interaccion normal. NO sirve `tile_stackmagic`, que pese a figurar como
+# pisable es un `stack_helper` -una herramienta para apilar muebles- y
+# bloquea el paso. `classic8_rug` marca el punto de reaparicion, distinto a
+# simple vista de las trampas para no confundirlos al configurar el wired.
+NECESARIOS = ('floortile', 'classic8_rug', 'sofachair_silo',
               'wf_trg_walks_on_furni', 'wf_act_teleport_to')
 
 # Hacia dónde corren los carriles, en coordenadas de PANTALLA.
@@ -65,12 +70,13 @@ def disenar():
         for x in range(x0, x1 + 1):
             mapa[y][x] = '0'
 
-    puerta = (0, y1)                 # se entra por la esquina de delante
-    inicio = (x0, y1)                # adonde devuelve el teletransporte
+    # La puerta es una baldosa del propio rectangulo, no un saliente: asi lo
+    # hacen 56 de los 60 modelos originales, y la sala mide exactamente 104.
+    puerta = (x0, y1)
+    inicio = (x0 + 1, y1)            # adonde devuelve el teletransporte
     esquina = (x0, y0)               # donde van los muebles wired
     combate = [(x, y0) for x in range(x0, x1 + 1)]
     sofas = [(x, y0) for x in range(x1 - 3, x1 + 1)]
-    mapa[puerta[1]][puerta[0]] = '0'
 
     # Carriles trampa, con el codo de la S alternando de lado.
     trampas = []
@@ -123,8 +129,8 @@ def comprobar(mapa, trampas, zonas, medidas):
     if expuestas < total * 0.5:
         sys.exit('El camino no está lo bastante expuesto')
 
-    # 3) Exactamente 104 baldosas, sin contar el hueco de la puerta.
-    suelo = sum(1 for y in range(alto) for x in range(ancho) if mapa[y][x] != 'x') - 1
+    # 3) Exactamente 104 baldosas: la puerta va dentro, sin salientes.
+    suelo = sum(1 for y in range(alto) for x in range(ancho) if mapa[y][x] != 'x')
     print('  la sala mide %d baldosas' % suelo)
     if suelo != LARGO * ANCHO_SALA:
         sys.exit('La sala debería medir %d baldosas' % (LARGO * ANCHO_SALA))
@@ -162,8 +168,8 @@ def escribir_sql(mapa, trampas, zonas, base):
     heightmap = '\\r\\n'.join(''.join(f) for f in mapa)
     rx, ry = zonas['inicio']
     wx, wy = zonas['esquina']
-    filas = ",\n".join("       (@propietario, @sala, %d, %d, %d, 0, 0, '')"
-                       % (base['tile_stackmagic']['id'], x, y) for x, y in trampas)
+    filas = ",\n".join("       (@propietario, @sala, %d, %d, %d, 0, 0, '0')"
+                       % (base['floortile']['id'], x, y) for x, y in trampas)
     sofas = ",\n".join("       (@propietario, @sala, %d, %d, %d, 0, 2, '')"
                        % (base['sofachair_silo']['id'], x, y) for x, y in zonas['sofas'])
     plantilla = open(os.path.join(AQUI, 'guerra-vip.plantilla.sql'),
@@ -171,7 +177,7 @@ def escribir_sql(mapa, trampas, zonas, base):
     return plantilla.format(
         n=len(trampas), dx=zonas['puerta'][0], dy=zonas['puerta'][1],
         hm=heightmap, traps=filas, sofas=sofas, nsofas=len(zonas['sofas']),
-        dest=base['tile_stackmagic']['id'], rx=rx, ry=ry,
+        dest=base['classic8_rug']['id'], rx=rx, ry=ry,
         trg=base['wf_trg_walks_on_furni']['id'],
         act=base['wf_act_teleport_to']['id'], wx=wx, wy=wy,
         zact=base['wf_trg_walks_on_furni']['h'])

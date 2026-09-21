@@ -28,7 +28,7 @@ DELETE FROM room_models WHERE name = 'model_guerravip';
 -- --- Mapa de la sala --------------------------------------------------
 --  x = sin suelo    0 = suelo    1 = plataforma o rampa
 INSERT INTO room_models (name, door_x, door_y, door_dir, heightmap, public_items, club_only)
-VALUES ('model_guerravip', 8, 0, 2, 'xxxxxxxx0x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nxxxxxxxxxx', '', '0');
+VALUES ('model_guerravip', 8, 1, 2, 'xxxxxxxxxx\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nx00000000x\r\nxxxxxxxxxx', '', '0');
 
 -- --- La sala ----------------------------------------------------------
 --  allow_walkthrough = 0 es imprescindible: si los jugadores se atraviesan,
@@ -47,42 +47,42 @@ SET @sala := (SELECT id FROM rooms
 -- --- Baldosas trampa: los 36 carriles rojos ---------------------------
 INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
 VALUES
-       (@propietario, @sala, 5103, 7, 1, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 2, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 3, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 4, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 5, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 6, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 7, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 8, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 9, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 10, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 11, 0, 0, ''),
-       (@propietario, @sala, 5103, 7, 12, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 2, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 3, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 4, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 5, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 6, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 7, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 8, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 9, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 10, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 11, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 12, 0, 0, ''),
-       (@propietario, @sala, 5103, 5, 13, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 1, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 2, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 3, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 4, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 5, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 6, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 7, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 8, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 9, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 10, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 11, 0, 0, ''),
-       (@propietario, @sala, 5103, 3, 12, 0, 0, '');
+       (@propietario, @sala, 132, 7, 1, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 2, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 3, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 4, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 5, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 6, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 7, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 8, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 9, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 10, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 11, 0, 0, '0'),
+       (@propietario, @sala, 132, 7, 12, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 2, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 3, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 4, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 5, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 6, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 7, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 8, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 9, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 10, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 11, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 12, 0, 0, '0'),
+       (@propietario, @sala, 132, 5, 13, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 1, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 2, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 3, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 4, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 5, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 6, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 7, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 8, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 9, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 10, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 11, 0, 0, '0'),
+       (@propietario, @sala, 132, 3, 12, 0, 0, '0');
 
 -- --- Sofas de la zona de descanso, al fondo ---------------------------
 INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
@@ -92,11 +92,11 @@ VALUES
        (@propietario, @sala, 36, 1, 12, 0, 2, ''),
        (@propietario, @sala, 36, 1, 13, 0, 2, '');
 
--- --- Destino del teletransporte: la baldosa de entrada -----------------
---  OJO: es una baldosa magica igual que las trampas, pero esta suelta en
---  la esquina de entrada. No la selecciones como trampa en el wired.
+-- --- Destino del teletransporte: la alfombra de la entrada -------------
+--  Es una alfombra, distinta a simple vista de las baldosas trampa, para
+--  no confundirlas al seleccionarlas en el wired.
 INSERT INTO items (user_id, room_id, item_id, x, y, z, rot, extra_data)
-VALUES (@propietario, @sala, 5103, 8, 1, 0, 0, '');
+VALUES (@propietario, @sala, 9901, 8, 2, 0, 0, '');
 
 -- --- Muebles wired, apilados en la misma casilla ----------------------
 --  Comparten casilla a proposito: es lo que los enlaza como un circuito.

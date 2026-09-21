@@ -160,9 +160,9 @@ trampa arriba y abajo, **un solo empujón elimina**. Al fondo, la zona de
 combate y unos sofás para quien prefiera mirar.
 
 ```
- ........V.      . pared      V camino seguro
- .WVRVVVRI.      R baldosa que teletransporta
- .PVRVRVRV.      P zona de combate
+ ..........      . pared      V camino seguro
+ .WVRVVVRV.      R baldosa que teletransporta
+ .PVRVRVRI.      P zona de combate
  .PVRVRVRV.      A sofás
  .PVRVRVRV.      I punto de reaparición
  .PVRVRVRV.      W muebles wired
@@ -180,6 +180,11 @@ combate y unos sofás para quien prefiera mirar.
 La orientación se cambia con `EJE_CARRILES` en `salas/generar.py`: con `'x'`
 los carriles salen girados 90 grados.
 
+Las trampas son `floortile`, la baldosa de suelo corriente. Conviene saberlo
+porque `tile_stackmagic` parece la elección obvia y figura como pisable, pero
+es un `stack_helper` —una herramienta para apilar muebles— y **bloquea el
+paso**: con ella la sala no se puede jugar.
+
 **Después de cargarla quedan dos cosas por hacer**, porque no se pueden dejar
 resueltas desde la base de datos:
 
@@ -194,9 +199,9 @@ resueltas desde la base de datos:
 
 2. **Configura los dos muebles wired**, apilados en la esquina del fondo:
    - En **al pisar un mueble**: selecciona las 36 baldosas de los carriles.
-   - En **teletransportar al usuario**: apunta a la baldosa suelta de la
-     esquina de entrada. Es igual que las trampas, así que **no la
-     selecciones** en el paso anterior.
+   - En **teletransportar al usuario**: apunta a la **alfombra** de la
+     entrada. Se distingue a simple vista de las baldosas, justo para no
+     confundirlas.
 
 El motivo de que ese paso sea manual: Arcturus guarda la configuración del
 wired en `items.wired_data`, con un formato que cambia entre versiones y que
