@@ -80,7 +80,8 @@ Y recarga la página.
 ./hotel.sh instalar    Clona el stack y descarga los submódulos
 ./hotel.sh arrancar    Levanta todo
 ./hotel.sh assets      Convierte los SWF a .nitro
-./hotel.sh logs [qué]  Registros: todo | arcturus | nitro
+./hotel.sh logs [qué]  Registros del contenedor: todo | arcturus | nitro | mysql
+                       o del proceso ya en marcha: emulador | cliente
 ./hotel.sh estado      Contenedores en marcha
 ./hotel.sh diagnostico Qué submódulos faltan y cuánto ocupan
 ./hotel.sh sql         Consola de MariaDB
@@ -168,6 +169,10 @@ que nuestro juego usa el 2096.
 **«No consigo hablar con Docker» pero `docker ps` te funciona.** No debería
 pasar: el script sondea con `docker ps` y te enseña la respuesta literal de
 Docker. Pásame ese texto.
+
+**`unix:///run/supervisord.sock no such file`.** Supervisor aún no ha arrancado
+dentro del contenedor: el emulador se está compilando todavía. Usa
+`hotel.cmd logs arcturus`, que lee la salida del contenedor y funciona siempre.
 
 **El emulador no conecta con la base de datos.** MariaDB tarda más en arrancar
 la primera vez. `./hotel.sh reiniciar` suele bastar.

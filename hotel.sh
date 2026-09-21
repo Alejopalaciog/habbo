@@ -171,12 +171,46 @@ orden_assets() {
   verde "Assets listos. Recarga http://127.0.0.1:1080?sso=123"
 }
 
+# ¿Está supervisor en marcha dentro de un contenedor? Durante el primer
+# arranque todavía no, porque el script de construcción va por delante.
+supervisor_listo() {
+  docker exec "$1" supervisorctl status >/dev/null 2>&1
+}
+
 orden_logs() {
   comprobar_requisitos
   case "${1:-todo}" in
-    arcturus) docker exec arcturus supervisorctl tail -f arcturus-emulator ;;
-    nitro)    docker exec nitro supervisorctl tail -f nitro-dev-server ;;
-    *)        compose logs -f ;;
+    todo)
+      compose logs -f
+      ;;
+    arcturus | nitro | mysql)
+      # La salida del contenedor: siempre disponible, y es donde se ve la
+      # compilación de Maven y la instalación de dependencias.
+      docker logs -f --tail 100 "$1"
+      ;;
+    emulador)
+      if supervisor_listo arcturus; then
+        docker exec arcturus supervisorctl tail -f arcturus-emulator
+      else
+        rojo "El emulador todavía no está en marcha."
+        gris "Se está compilando. Míralo con:  $YO logs arcturus"
+        exit 1
+      fi
+      ;;
+    cliente)
+      if supervisor_listo nitro; then
+        docker exec nitro supervisorctl tail -f nitro-dev-server
+      else
+        rojo "El servidor del cliente todavía no está en marcha."
+        gris "Se están instalando las dependencias. Míralo con:  $YO logs nitro"
+        exit 1
+      fi
+      ;;
+    *)
+      rojo "No sé de qué quieres los registros: '$1'."
+      gris "Opciones: todo, arcturus, nitro, mysql, emulador, cliente"
+      exit 1
+      ;;
   esac
 }
 
@@ -187,8 +221,13 @@ orden_sql() {
 
 orden_reiniciar() {
   comprobar_requisitos
-  info "Reiniciando el emulador..."
-  docker exec arcturus supervisorctl restart arcturus-emulator
+  if supervisor_listo arcturus; then
+    info "Reiniciando el emulador..."
+    docker exec arcturus supervisorctl restart arcturus-emulator
+  else
+    gris "Supervisor aún no responde; reinicio el contenedor entero."
+    compose restart arcturus
+  fi
   verde "Hecho."
 }
 
@@ -243,7 +282,8 @@ Hotel local — emulador Arcturus + cliente Nitro
   ./hotel.sh instalar    Clona el stack y descarga los submódulos
   ./hotel.sh arrancar    Levanta base de datos, emulador y cliente
   ./hotel.sh assets      Convierte los SWF a .nitro (tras el 1.er arranque)
-  ./hotel.sh logs [qué]  Sigue los registros: todo | arcturus | nitro
+  ./hotel.sh logs [qué]  Registros del contenedor: todo | arcturus | nitro | mysql
+                         o del proceso ya en marcha: emulador | cliente
   ./hotel.sh estado      Qué contenedores hay en marcha
   ./hotel.sh diagnostico Qué submódulos faltan y cuánto ocupan
   ./hotel.sh sql         Abre la consola de MariaDB
